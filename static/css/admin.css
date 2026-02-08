@@ -33,6 +33,15 @@
   margin-right: 6px;
 }
 
-.btn-edit { background: #3b82f6; color: white; }
-.btn-block { background: #f59e0b; color: white; }
-.btn-remove { background: #ef4444; color: white; }
+.btn-edit {
+  background: #3b82f6;
+  color: white;
+}
+.btn-block {
+  background: #f59e0b;
+  color: white;
+}
+.btn-remove {
+  background: #ef4444;
+  color: white;
+}
