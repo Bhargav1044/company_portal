@@ -76,6 +76,32 @@ def signin():
     return jsonify({"success": True, "username": user["name"]})
 
 
+@app.route("/api/user/update", methods=["POST"])
+def update_profile():
+    data = request.json
+    current_username = data["username"]
+    current_password = data["currentPassword"]
+    new_username = data.get("newUsername")
+    new_password = data.get("newPassword")
+
+    user = next((u for u in approved_users 
+                 if u["name"].lower() == current_username.lower() 
+                 and u["password"] == current_password), None)
+
+    if not user:
+        return jsonify({"error": "Invalid current password"}), 401
+
+    if new_username and new_username.lower() != current_username.lower():
+        if any(u["name"].lower() == new_username.lower() for u in approved_users):
+            return jsonify({"error": "Username already taken"}), 400
+        user["name"] = new_username
+
+    if new_password:
+        user["password"] = new_password
+
+    return jsonify({"success": True, "username": user["name"]})
+
+
 # ---------- ADMIN ----------
 @app.route("/api/admin/data")
 def admin_data():
@@ -112,8 +138,11 @@ def block_user():
 
 @app.route("/api/admin/remove", methods=["POST"])
 def remove_user():
+
     name = request.json["name"]
-    approved_users[:] = [u for u in approved_users if u["name"] != name]
+    user = next((u for u in approved_users if u["name"] == name), None)
+    if user:
+        approved_users.remove(user)
     return jsonify({"success": True})
 
 
