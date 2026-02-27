@@ -1,33 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 </head>
-<body>
+<body onload="loadAdminPanel()">
 
-<h2>Admin Dashboard</h2>
+<div class="container">
+    <h1>Admin Dashboard</h1>
 
-<h3>Pending Requests</h3>
-{% for user in pending %}
-  <form method="POST">
-    <span>{{ user.username }}</span>
-    <input type="hidden" name="username" value="{{ user.username }}">
-    <button name="action" value="approve">Approve</button>
-    <button name="action" value="reject">Reject</button>
-  </form>
-{% else %}
-  <p>No pending requests</p>
-{% endfor %}
+    <div class="stat-grid">
+        <div class="stat-card">
+            <h3 id="approvedCount">0</h3>
+            <p>Approved</p>
+        </div>
 
-<h3>Approved Users</h3>
-<ul>
-  {% for user in approved %}
-    <li>{{ user.username }}</li>
-  {% endfor %}
-</ul>
+        <div class="stat-card">
+            <h3 id="pendingCount">0</h3>
+            <p>Pending</p>
+        </div>
+    </div>
 
-<a href="/logout">Logout</a>
+    <div>
+        <h3>Pending Requests</h3>
+        <div id="pendingList"></div>
+    </div>
 
+    <div>
+        <h3>Approved Users</h3>
+        <div id="approvedList"></div>
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

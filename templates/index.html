@@ -390,61 +390,55 @@ document.getElementById('signInForm').addEventListener('submit', async (e) => {
 
 async function loadAdminPanel() {
     const response = await fetch('/api/adminpanel');
-    const data = await response.json();
-
     if (!response.ok) return;
 
+    const data = await response.json();
+
+    // Update counts
     document.getElementById('approvedCount').textContent = data.approved_count;
     document.getElementById('pendingCount').textContent = data.pending_count;
 
-    /* -------- Pending Users -------- */
+    // Populate Pending Users
     const pendingList = document.getElementById('pendingList');
-
-    pendingList.innerHTML = data.pending.length
-        ? data.pending.map(user => `
-            <div class="admin-card">
-                <strong>${user.username}</strong><br>
-                <button class="btn-sm" 
-                onclick="approveUser('${user.username}')">
-                Approve</button>
+    if (data.pending_users.length === 0) {
+        pendingList.innerHTML = "<p>No pending requests</p>";
+    } else {
+        pendingList.innerHTML = data.pending_users.map(user => `
+            <div class="request-card">
+                <h4>${user.username}</h4>
+                <button onclick="approveUser(${user.id})">Approve</button>
             </div>
-        `).join('')
-        : 'No pending users';
+        `).join("");
+    }
 
-    /* -------- Approved Users -------- */
+    // Populate Approved Users
     const approvedList = document.getElementById('approvedList');
-
-    approvedList.innerHTML = data.approved.length
-        ? data.approved.map(user => `
-            <div class="admin-card">
-                <strong>${user.username}</strong>
-                <p>Status: ${user.blocked ? 'Blocked' : 'Active'}</p>
-
-                <button class="btn-sm" onclick="editUser('${user.username}')">Edit</button>
-                <button class="btn-sm" onclick="toggleBlock('${user.username}')">
-                    ${user.blocked ? 'Unblock' : 'Block'}
-                </button>
-                <button class="btn-sm" onclick="removeUser('${user.username}')">Remove</button>
+    if (data.approved_users.length === 0) {
+        approvedList.innerHTML = "<p>No approved users</p>";
+    } else {
+        approvedList.innerHTML = data.approved_users.map(user => `
+            <div class="request-card">
+                <h4>${user.username}</h4>
             </div>
-        `).join('')
-        : 'No approved users';
+        `).join("");
+    }
 }
 
 /* ================= ADMIN ACTIONS ================= */
 
-async function approveUser(username) {
-    console.log("Approving:", username);
-
-    const res = await fetch('/api/admin/approve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username })
+async function approveUser(userId) {
+    const response = await fetch(`/api/approve_user/${userId}`, {
+        method: "POST"
     });
 
-    const data = await res.json();
-    console.log("Response:", data);
+    const data = await response.json();
 
-    loadAdminPanel();
+    if (data.success) {
+        updateAdminDashboard();
+        alert("User approved successfully!");
+    } else {
+        alert("Error approving user");
+    }
 }
 
 async function toggleBlock(username) {
