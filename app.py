@@ -58,7 +58,7 @@ def user_dashboard():
 @app.route("/api/master-file", methods=["POST"])
 def add_master_file():
     data = request.json
-    print("MASTER DATA RECEIVED:", data)  # 👈 ADD THIS
+    print("MASTER DATA RECEIVED:", data)  
 
     response = supabase.table("master_file").insert({
         "name": data["name"],
@@ -73,7 +73,7 @@ def add_master_file():
         "end_month": data["end_month"]
     }).execute()
 
-    print("SUPABASE RESPONSE:", response)  # 👈 ADD THIS
+    print("SUPABASE RESPONSE:", response)  
 
     return jsonify({"message": "Done"})
 
