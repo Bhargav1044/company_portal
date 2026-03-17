@@ -1,13 +1,17 @@
-from flask import Flask, render_template, request, jsonify
-from supabase import create_client
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, render_template, request, jsonify # type: ignore
+from supabase import create_client # type: ignore
+from werkzeug.security import generate_password_hash, check_password_hash # type: ignore
 import os
 from datetime import datetime
+import certifi
+import ssl
+
+ssl_context = ssl.create_default_context(cafile=certifi.where())
 
 # ================= SUPABASE CONFIG =================
 
 SUPABASE_URL = "https://fxzzdmpusmhroyxjzfwk.supabase.co"
-SUPABASE_KEY = "sb_secret_D8-XgMPPYA7CQO03jz79zg_gisGKy8h"
+SUPABASE_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4enpkbXB1c21ocm95eGp6ZndrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjAyOTc3MiwiZXhwIjoyMDg3NjA1NzcyfQ.OPDu7-jmaFc4vD16zDR8BcsoJjYWRiCOfmFdKtP3ZYg"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -51,13 +55,114 @@ def admin_page():
 def user_dashboard():
     return render_template("user_dashboard.html")
 
-@app.route("/master-file")
-def master_file_page():
-    return render_template("master_file.html")
+@app.route("/api/master-file", methods=["POST"])
+def add_master_file():
+    data = request.json
+    print("MASTER DATA RECEIVED:", data)  # 👈 ADD THIS
 
-@app.route("/update-master-file")
-def update_master_file_page():
-    return render_template("update_master_file.html")
+    response = supabase.table("master_file").insert({
+        "name": data["name"],
+        "gst_no": data["gst_no"],
+        "id": int(data["id"]),
+        "password": data["password"],
+        "concern_person": data["concern_person"],
+        "contact_no": data["contact_no"],
+        "email_id": data["email_id"],
+        "periodicity": data["periodicity"],
+        "start_month": data["start_month"],
+        "end_month": data["end_month"]
+    }).execute()
+
+    print("SUPABASE RESPONSE:", response)  # 👈 ADD THIS
+
+    return jsonify({"message": "Done"})
+
+
+# ================= UPDATE =================
+@app.route("/api/update-master-file", methods=["POST"])
+def update_master_file():
+    data = request.json
+
+    try:
+        # 1️⃣ Update main master table
+        supabase.table("master_file")\
+            .update({
+                "id": int(data["id"]),
+                "password": data["password"],
+                "concern_person": data["concern_person"],
+                "contact_no": data["contact_no"],
+                "email_id": data["email_id"],
+                "periodicity": data["periodicity"]
+            })\
+            .eq("gst_no", data["gst_no"])\
+            .execute()
+
+        # 2️⃣ Insert into update history table (ONLY existing columns)
+        supabase.table("update_master_file").insert({
+            "gst_no": data["gst_no"],
+            "name": None,  # optional if not in form
+            "password": data["password"],
+            "concern_person": data["concern_person"],
+            "contact_no": data["contact_no"],
+            "email_id": data["email_id"],
+            "periodicity": data["periodicity"]
+        }).execute()
+
+        return jsonify({"message": "Client updated successfully"})
+
+    except Exception as e:
+        print("Update Error:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+# ================= GSTR1 =================
+# ================= GSTR1 =================
+@app.route("/api/gstr1", methods=["POST"])
+def add_gstr1():
+    data = request.json
+
+    try:
+        arn_status = data.get("arn_status")
+        arn_no = data.get("arn_no")
+
+        # If not manual entry, ARN number should be None
+        if arn_status != "manual":
+            arn_no = None
+
+        supabase.table("gstr1_filing").insert({
+            "gst_no": data["gst_no"],
+            "month": data["month"],
+            "arn_status": arn_status,
+            "arn_no": arn_no,
+            "filing_date": data["filing_date"]
+        }).execute()
+
+        return jsonify({"message": "GSTR1 saved successfully"})
+
+    except Exception as e:
+        print("GSTR1 ERROR:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+
+# ================= FORM3B =================
+@app.route("/api/form3b", methods=["POST"])
+def add_form3b():
+    data = request.json
+
+    try:
+        supabase.table("form3b_filing").insert({
+            "gst_no": data["gst_no"],
+            "month": data["month"],
+            "arn_no": data["arn_no"],
+            "filing_date": data["filing_date"]
+        }).execute()
+
+        return jsonify({"message": "Form 3B saved successfully"})
+
+    except Exception as e:
+        print("FORM3B ERROR:", e)
+        return jsonify({"error": str(e)}), 500
 
 # ================= FIRST LOGIN =================
 
@@ -251,49 +356,6 @@ def edit_user():
 
     return jsonify({"success": True})
 
-@app.route("/api/master-file", methods=["POST"])
-def master_file():
-    try:
-        data = request.json
-
-        supabase.table("master_file").insert({
-            "name": data["name"],
-            "gst_no": data["gst_no"],
-            "password": data["password"],
-            "concern_person": data["concern_person"],
-            "contact_no": data["contact_no"],
-            "email_id": data["email_id"],
-            "periodicity": data["periodicity"],
-            "start_month": data["start_month"],
-            "end_month": data["end_month"]
-        }).execute()
-
-        return jsonify({"success": True})
-
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
-    
-@app.route("/api/update-master-file", methods=["POST"])
-def update_master_file():
-    try:
-        data = request.json
-
-        supabase.table("master_file") \
-            .update({
-                "password": data["password"],
-                "concern_person": data["concern_person"],
-                "contact_no": data["contact_no"],
-                "email_id": data["email_id"],
-                "periodicity": data["periodicity"]
-            }) \
-            .eq("name", data["name"]) \
-            .eq("gst_no", data["gst_no"]) \
-            .execute()
-
-        return jsonify({"success": True})
-
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

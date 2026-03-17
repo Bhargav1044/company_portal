@@ -2,10 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>User Dashboard</title>
+    <title>CA Operations Panel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Flask Static CSS -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/user_dashboard.css') }}"
@@ -13,49 +12,325 @@
   </head>
 
   <body>
-    <!-- Logout Button OUTSIDE container -->
     <button class="logout-btn" onclick="logout()">Logout</button>
 
     <div class="dashboard-container">
-      <!-- Header -->
       <div class="header">
-        <h1>User Dashboard</h1>
+        <h1>User Operations</h1>
       </div>
 
-      <!-- Dashboard Cards -->
-      <div class="dashboard-cards">
-        <!-- Master File -->
-        <div class="card" onclick="goToMasterFile()">
-          <h3>Master File Sheet</h3>
-          <p>Add clients details to master file</p>
+      <div class="content">
+        <label>Select Operation</label>
+        <select id="operationSelect">
+          <option value="">Select</option>
+          <option value="master">Add Client Data</option>
+          <option value="update">Update Client Data</option>
+          <option value="gstr1">Add GSTR1 ARN No</option>
+          <option value="form3b">Add Form 3B ARN No</option>
+        </select>
+
+        <div class="btn-group">
+          <button onclick="processOperation()">Proceed</button>
         </div>
 
-        <!-- Update Master File -->
-        <div class="card" onclick="goToUpdateMasterFile()">
-          <h3>Update Master File Sheet</h3>
-          <p>Update clients details</p>
-        </div>
+        <div id="formArea"></div>
       </div>
     </div>
 
     <script>
-      // Check login
-      const username = localStorage.getItem("username");
-      if (!username) {
-        window.location.href = "/";
-      }
+      /* ================= BASIC ================= */
 
       function logout() {
         localStorage.removeItem("username");
         window.location.href = "/";
       }
 
-      function goToMasterFile() {
-        window.location.href = "/master-file";
+      const months = [
+        "April 2026",
+        "May 2026",
+        "June 2026",
+        "July 2026",
+        "August 2026",
+        "September 2026",
+        "October 2026",
+        "November 2026",
+        "December 2026",
+        "January 2027",
+        "February 2027",
+        "March 2027",
+      ];
+
+      /* ================= LOAD FORM ================= */
+
+      function processOperation() {
+        const value = document.getElementById("operationSelect").value;
+        const area = document.getElementById("formArea");
+
+        if (!value) {
+          alert("Please select operation");
+          return;
+        }
+
+        if (value === "master") {
+          area.innerHTML = masterForm();
+          attachFormHandler("masterForm", "/api/master-file");
+        }
+
+        if (value === "update") {
+          area.innerHTML = updateForm();
+          attachFormHandler("updateForm", "/api/update-master-file");
+        }
+
+        if (value === "gstr1") {
+          area.innerHTML = gstr1Form();
+          attachFormHandler("gstr1Form", "/api/gstr1");
+        }
+
+        if (value === "form3b") {
+          area.innerHTML = form3bForm();
+          attachFormHandler("form3bForm", "/api/form3b");
+        }
       }
 
-      function goToUpdateMasterFile() {
-        window.location.href = "/update-master-file";
+      /* ================= ATTACH SUBMIT ================= */
+
+      function attachFormHandler(formId, endpoint) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const data = Object.fromEntries(new FormData(form).entries());
+
+          console.log("Submitting to:", endpoint);
+          console.log("Payload:", data);
+
+          try {
+            const response = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            alert(result.message || result.error || "Success");
+          } catch (error) {
+            console.error("Fetch error:", error);
+            alert("Something went wrong. Check console.");
+          }
+        });
+      }
+
+      /* ================= MASTER FORM ================= */
+
+      function masterForm() {
+        return `
+<div class="form-card">
+<h2>Add Client Data</h2>
+
+<form id="masterForm">
+
+<input name="name" placeholder="Name" required>
+
+<input name="gst_no"
+pattern="[0-9]{15}" maxlength="15"
+placeholder="GST No (15 digits)" required>
+
+<input name="id" type="number"
+placeholder="ID" required>
+
+<input name="password"
+type="password"
+placeholder="Password" required>
+
+<input name="concern_person"
+placeholder="Concern Person" required>
+
+<input name="contact_no"
+pattern="[0-9]{10}" maxlength="10"
+placeholder="Contact No (10 digits)" required>
+
+<input name="email_id"
+type="email"
+placeholder="Email ID" required>
+
+<select name="periodicity" required>
+<option value="">Periodicity</option>
+<option>Monthly</option>
+<option>Quarterly</option>
+</select>
+
+<select id="startMonth"
+name="start_month" required>
+<option value="">Start Month</option>
+${months.map((m) => `<option value="${m}">${m}</option>`).join("")}
+</select>
+
+<select id="endMonth"
+name="end_month" required>
+<option value="">End Month</option>
+</select>
+
+<button type="submit">Submit</button>
+
+</form>
+</div>
+`;
+      }
+
+      /* Restrict End Month */
+      document.addEventListener("change", function (e) {
+        if (e.target.id === "startMonth") {
+          const startValue = e.target.value;
+          const startIndex = months.indexOf(startValue);
+          const endSelect = document.getElementById("endMonth");
+
+          endSelect.innerHTML = '<option value="">End Month</option>';
+
+          months.forEach((m, i) => {
+            if (i >= startIndex) {
+              endSelect.innerHTML += `<option value="${m}">${m}</option>`;
+            }
+          });
+        }
+      });
+
+      /* ================= UPDATE FORM ================= */
+
+      function updateForm() {
+        return `
+<div class="form-card">
+<h2>Update Client Data</h2>
+
+<form id="updateForm">
+
+<input name="gst_no"
+pattern="[0-9]{15}" maxlength="15"
+placeholder="GST No (15 digits)" required>
+
+<input name="id"
+type="number"
+placeholder="ID" required>
+
+<input name="password"
+type="password"
+placeholder="Password" required>
+
+<input name="concern_person"
+placeholder="Concern Person" required>
+
+<input name="contact_no"
+pattern="[0-9]{10}" maxlength="10"
+placeholder="Contact No (10 digits)" required>
+
+<input name="email_id"
+type="email"
+placeholder="Email ID" required>
+
+<select name="periodicity" required>
+<option value="">Periodicity</option>
+<option>Monthly</option>
+<option>Quarterly</option>
+</select>
+
+<button type="submit">Update</button>
+
+</form>
+</div>
+`;
+      }
+
+      /* ================= GSTR1 FORM ================= */
+
+      function gstr1Form() {
+        return `
+<div class="form-card">
+<h2>GSTR1 Filing</h2>
+
+<form id="gstr1Form">
+
+<input name="gst_no"
+pattern="[0-9]{15}" maxlength="15"
+placeholder="GST No" required>
+
+<select name="month" required>
+<option value="">Month</option>
+${months.map((m) => `<option value="${m}">${m}</option>`).join("")}
+</select>
+
+<select name="arn_status"
+id="arnStatus"
+onchange="toggleARN(this)" required>
+
+<option value="">Select ARN Status</option>
+<option>Filed by Client</option>
+<option>Client Exited</option>
+<option>GST Cancelled</option>
+<option>NA</option>
+<option value="manual">Enter ARN Manually</option>
+
+</select>
+
+<input name="arn_no"
+id="manualARN"
+pattern="[A-Za-z0-9]{15}" maxlength="15"
+placeholder="Enter ARN"
+style="display:none;">
+
+<input name="filing_date"
+type="date" required>
+
+<button type="submit">Submit</button>
+
+</form>
+</div>
+`;
+      }
+
+      function toggleARN(select) {
+        const input = document.getElementById("manualARN");
+
+        if (select.value === "manual") {
+          input.style.display = "block";
+          input.required = true;
+        } else {
+          input.style.display = "none";
+          input.required = false;
+        }
+      }
+
+      /* ================= FORM3B FORM ================= */
+
+      function form3bForm() {
+        return `
+<div class="form-card">
+<h2>Form 3B Filing</h2>
+
+<form id="form3bForm">
+
+<input name="gst_no"
+pattern="[0-9]{15}" maxlength="15"
+placeholder="GST No" required>
+
+<select name="month" required>
+<option value="">Month</option>
+${months.map((m) => `<option value="${m}">${m}</option>`).join("")}
+</select>
+
+<input name="arn_no"
+pattern="[A-Za-z0-9]{15}" maxlength="15"
+placeholder="Form 3B ARN No" required>
+
+<input name="filing_date"
+type="date" required>
+
+<button type="submit">Submit</button>
+
+</form>
+</div>
+`;
       }
     </script>
   </body>
