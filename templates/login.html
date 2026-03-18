@@ -1,25 +1,210 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Company Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Portal</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<h2>Company Portal Login</h2>
+<div class="auth-page">
+  <div class="auth-card">
 
-<div id="firstLoginError" class="error"></div>
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="auth-logo">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="10" fill="white" fill-opacity="0.2"/>
+          <path d="M20 8L32 14V26L20 32L8 26V14L20 8Z" stroke="white" stroke-width="2" fill="none"/>
+          <circle cx="20" cy="20" r="4" fill="white"/>
+        </svg>
+      </div>
+      <h1 class="auth-title">Company Portal</h1>
+      <p class="auth-subtitle">Sign in to your account</p>
+    </div>
 
-<form id="firstLoginForm">
-  <input id="companyEmail" type="email" placeholder="Email" required>
+    <!-- Role Tabs -->
+    <div class="role-tabs">
+      <button class="role-tab active" id="adminTabBtn" onclick="switchRole('admin')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        Admin
+      </button>
+      <button class="role-tab" id="userTabBtn" onclick="switchRole('user')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        User
+      </button>
+    </div>
 
-  <div class="password-wrapper">
-    <input id="companyPassword" type="password" placeholder="Password" required>
-    <span class="toggle-eye" onclick="togglePassword('companyPassword', this)">👁</span>
-  </div>
+    <div class="auth-body">
 
-  <button>Login</button>
-</form>
+      <!-- ADMIN LOGIN PANEL -->
+      <div id="adminPanel" class="auth-panel active">
+        <div id="firstLoginError" class="alert alert-error"></div>
+        <form id="firstLoginForm" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="companyEmail">Email Address</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input id="companyEmail" class="form-input" type="email" placeholder="admin@company.com" required autocomplete="email">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="companyPassword">Password</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input id="companyPassword" class="form-input" type="password" placeholder="Enter password" required autocomplete="current-password">
+              <button type="button" class="toggle-eye" onclick="togglePassword('companyPassword', this)" aria-label="Toggle password visibility">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            Sign In as Admin
+          </button>
+        </form>
+      </div>
+
+      <!-- USER PANEL -->
+      <div id="userPanel" class="auth-panel">
+
+        <!-- User sub-tabs -->
+        <div class="sub-tabs">
+          <button class="sub-tab active" id="signInSubBtn" onclick="switchUserTab('signIn')">Sign In</button>
+          <button class="sub-tab" id="signUpSubBtn" onclick="switchUserTab('signUp')">Sign Up</button>
+        </div>
+
+        <!-- Sign In Form -->
+        <div id="signInSection" class="user-section active">
+          <div id="signInError" class="alert alert-error"></div>
+          <form id="signInForm" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="signInName">Username</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <input id="signInName" class="form-input" type="text" placeholder="Enter username" required autocomplete="username">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signInPassword">Password</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input id="signInPassword" class="form-input" type="password" placeholder="Enter password" required autocomplete="current-password">
+                <button type="button" class="toggle-eye" onclick="togglePassword('signInPassword', this)" aria-label="Toggle password visibility">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          </form>
+          <p class="auth-footer-text">Don't have an account? <a class="auth-link" href="#" role="button" onclick="switchUserTab('signUp'); return false;">Sign Up</a></p>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div id="signUpSection" class="user-section">
+          <div id="signUpError" class="alert alert-error"></div>
+          <div id="signUpSuccess" class="alert alert-success"></div>
+          <form id="signUpForm" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="signUpName">Username</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <input id="signUpName" class="form-input" type="text" placeholder="Choose a username" required autocomplete="username">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signUpPassword">Password</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input id="signUpPassword" class="form-input" type="password" placeholder="Create password" required autocomplete="new-password">
+                <button type="button" class="toggle-eye" onclick="togglePassword('signUpPassword', this)" aria-label="Toggle password visibility">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signUpConfirmPassword">Confirm Password</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input id="signUpConfirmPassword" class="form-input" type="password" placeholder="Confirm password" required autocomplete="new-password">
+                <button type="button" class="toggle-eye" onclick="togglePassword('signUpConfirmPassword', this)" aria-label="Toggle password visibility">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Request Access</button>
+          </form>
+          <p class="auth-footer-text">Already have an account? <a class="auth-link" href="#" role="button" onclick="switchUserTab('signIn'); return false;">Sign In</a></p>
+        </div>
+
+      </div>
+    </div><!-- /auth-body -->
+
+  </div><!-- /auth-card -->
+</div><!-- /auth-page -->
+
+<script>
+  function switchRole(role) {
+    document.getElementById('adminPanel').classList.toggle('active', role === 'admin');
+    document.getElementById('userPanel').classList.toggle('active', role === 'user');
+    document.getElementById('adminTabBtn').classList.toggle('active', role === 'admin');
+    document.getElementById('userTabBtn').classList.toggle('active', role === 'user');
+    // clear alerts
+    ['firstLoginError','signInError','signUpError','signUpSuccess'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.textContent = ''; el.classList.remove('show'); }
+    });
+  }
+
+  function switchUserTab(tab) {
+    document.getElementById('signInSection').classList.toggle('active', tab === 'signIn');
+    document.getElementById('signUpSection').classList.toggle('active', tab === 'signUp');
+    document.getElementById('signInSubBtn').classList.toggle('active', tab === 'signIn');
+    document.getElementById('signUpSubBtn').classList.toggle('active', tab === 'signUp');
+    ['signInError','signUpError','signUpSuccess'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.textContent = ''; el.classList.remove('show'); }
+    });
+  }
+</script>
 
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
