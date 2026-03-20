@@ -9,6 +9,20 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+=======
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
 
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach((screen) => {
@@ -46,6 +60,33 @@ if (loginForm) {
         email: document.getElementById("loginEmail").value,
         password: document.getElementById("loginPassword").value,
       }),
+
+const loginForm = document.getElementById('loginForm');
+
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const response = await fetch('/api/first-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            if (data.role === 'admin') {
+                window.location.href = "/admin";
+            } else {
+                window.location.href = "/portal";
+            }
+        } else {
+            showError('loginError', data.error);
+        }
     });
 
     const data = await response.json();
@@ -120,7 +161,6 @@ if (signInForm) {
     });
 
     const data = await response.json();
-
     if (response.ok) {
       localStorage.setItem(
         "username",
@@ -209,6 +249,67 @@ async function loadAdminPanel() {
 
   if (data.approved_users.length === 0) {
     approvedList.innerHTML = `
+    const approvedCount = data.approved_count;
+    const pendingCount  = data.pending_count;
+    const blockedCount  = data.approved_users ? data.approved_users.filter(u => u.blocked).length : 0;
+
+    if (document.getElementById('approvedCount')) {
+        document.getElementById('approvedCount').textContent = approvedCount;
+    }
+    if (document.getElementById('pendingCount')) {
+        document.getElementById('pendingCount').textContent = pendingCount;
+    }
+    if (document.getElementById('blockedCount')) {
+        document.getElementById('blockedCount').textContent = blockedCount;
+    }
+    if (document.getElementById('pendingBadge')) {
+        document.getElementById('pendingBadge').textContent = pendingCount;
+    }
+    if (document.getElementById('approvedBadge')) {
+        document.getElementById('approvedBadge').textContent = approvedCount;
+    }
+
+    /* ================= PENDING ================= */
+
+    const pendingList = document.getElementById('pendingList');
+
+    if (data.pending_users.length === 0) {
+        pendingList.innerHTML = `
+            <div class="empty-state">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+                <p>No pending requests</p>
+            </div>`;
+    } else {
+        pendingList.innerHTML = data.pending_users.map(user => `
+            <div class="user-card">
+                <div class="user-avatar">${escapeHtml(user.username.charAt(0))}</div>
+                <div class="user-info">
+                    <div class="user-name">${escapeHtml(user.username)}</div>
+                    <div class="user-meta"><span class="badge badge-pending">Pending Approval</span></div>
+                </div>
+                <div class="user-actions">
+                    <button class="btn btn-sm btn-approve"
+                            onclick="approveUser('${escapeHtml(String(user.id))}')">
+                        Approve
+                    </button>
+                    <button class="btn btn-sm btn-reject"
+                            onclick="rejectUser('${escapeHtml(String(user.id))}')">
+                        Reject
+                    </button>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    /* ================= APPROVED ================= */
+
+    const approvedList = document.getElementById('approvedList');
+
+    if (data.approved_users.length === 0) {
+        approvedList.innerHTML = `
             <div class="empty-state">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -220,13 +321,18 @@ async function loadAdminPanel() {
     approvedList.innerHTML = data.approved_users
       .map(
         (user) => `
+    } else {
+        approvedList.innerHTML = data.approved_users.map(user => `
             <div class="user-card">
                 <div class="user-avatar">${escapeHtml(user.username.charAt(0))}</div>
                 <div class="user-info">
                     <div class="user-name">${escapeHtml(user.username)}</div>
                     <div class="user-meta">
+
                         <span class="badge ${user.blocked ? "badge-blocked" : "badge-approved"}">
                             ${user.blocked ? "Blocked" : "Approved"}
+                        <span class="badge ${user.blocked ? 'badge-blocked' : 'badge-approved'}">
+                            ${user.blocked ? 'Blocked' : 'Approved'}
                         </span>
                     </div>
                 </div>
