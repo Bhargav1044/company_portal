@@ -2,63 +2,155 @@
    AUTH PAGES — style.css
    =================================================== */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #4f46e5 100%);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+
+  background: url("../images/ca.png") no-repeat center;
+  background-size: 50%;
+  background-attachment: fixed;
+
+  position: relative;
   min-height: 100vh;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+
+  /* 🔥 ADD THIS */
+  margin: 0;
+
   color: #111827;
 }
 
-/* ---- Page Wrapper ---- */
-.auth-page {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Transparent + Fluorescent Glow Overlay */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  /* light transparency */
+  background: rgba(255, 255, 255, 0.666);
+
+  /* blur */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  /* subtle glow effect */
+  box-shadow: inset 0 0 120px rgba(37, 99, 235, 0.25);
+
+  z-index: 0;
 }
 
-/* ---- Card ---- */
+/* Keep UI above */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+/* ---- Page Wrapper ---- */
 .auth-card {
-  background: #ffffff;
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border-radius: 24px;
+  margin: auto;
   width: 100%;
-  max-width: 460px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  max-width: 480px;
+  padding: 0; /* remove tight padding */
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+
   overflow: hidden;
+}
+.auth-card.small {
+  max-width: 400px;
+}
+
+.auth-body {
+  padding: 40px 40px 40px;
 }
 
 /* ---- Header ---- */
 .auth-header {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #4f46e5 100%);
-  padding: 36px 40px 28px;
-  text-align: center;
-  color: white;
-}
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.25),
+    rgba(240, 249, 255, 0.2),
+    rgba(236, 253, 245, 0.2)
+  );
 
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  padding: 40px 30px 26px;
+  text-align: center;
+
+  color: #1f2937; /* dark gray instead of white */
+}
 .auth-logo {
   margin-bottom: 12px;
 }
 
 .auth-title {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+  margin-top: 6px;
 }
 
 .auth-subtitle {
+  margin-top: 6px;
+}
+
+input {
+  height: 48px; /* 🔥 consistent modern height */
+  border-radius: 12px;
+  padding: 0 14px;
   font-size: 14px;
-  opacity: 0.8;
-  margin-top: 4px;
+}
+.form-group {
+  margin-bottom: 22px; /* 🔥 more gap between fields */
+}
+input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+input:focus {
+  outline: none;
+  border: 1px solid rgba(16, 185, 129, 0.4); /* subtle green focus */
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+button {
+  background: linear-gradient(
+    135deg,
+    #0f766e,
+    /* teal */ #10b981 /* soft green */
+  );
+
+  color: white;
+  border: none;
+  border-radius: 10px;
+  height: 48px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(135deg, #115e59, #059669);
 }
 
 /* ---- Role Tabs ---- */
@@ -81,7 +173,10 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
   border-bottom: 3px solid transparent;
 }
 
@@ -130,7 +225,10 @@ body {
   border: none;
   border-radius: 7px;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
 .sub-tab:hover {
@@ -187,7 +285,10 @@ body {
   font-size: 14px;
   color: #111827;
   background: #f9fafb;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
   outline: none;
 }
 
@@ -231,7 +332,10 @@ body {
   border-radius: 10px;
   border: none;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.1s,
+    box-shadow 0.2s;
   text-decoration: none;
 }
 
@@ -269,6 +373,78 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #0f766e, #0891b2);
+  color: white;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #0d6b63, #0781a1);
+  box-shadow: 0 6px 16px rgba(8, 145, 178, 0.4);
+  transform: translateY(-1px);
+}
+
+.portal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.signup-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+  padding: 11px 13px;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.signup-notice svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ---- Footer text ---- */
+.auth-footer-text {
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 18px;
+}
+
+.auth-footer-text + .auth-footer-text {
+  margin-top: 8px;
+}
+
+.auth-link {
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
 }
 
 .alert-error {

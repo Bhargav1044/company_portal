@@ -9,329 +9,166 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/user_dashboard.css') }}"
     />
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
   </head>
 
   <body>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-
-    <div class="dashboard-container">
-      <div class="header">
-        <h1>User Operations</h1>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="logo">
+        <i class="fas fa-file"></i>
+        <span>GST Manager</span>
       </div>
 
-      <div class="content">
-        <label>Select Operation</label>
-        <select id="operationSelect">
-          <option value="">Select</option>
-          <option value="master">Add Client Data</option>
-          <option value="update">Update Client Data</option>
-          <option value="gstr1">Add GSTR1 ARN No</option>
-          <option value="form3b">Add Form 3B ARN No</option>
-        </select>
-
-        <div class="btn-group">
-          <button onclick="processOperation()">Proceed</button>
+      <div class="menu">
+        <div class="menu-item active">
+          <i class="fas fa-chart-bar"></i><span>Dashboard</span>
         </div>
 
-        <div id="formArea"></div>
+        <div class="menu-section">GSTR1 & FORM 3B</div>
+
+        <div class="menu-item" onclick="navigate('/GSTR1&Form3B/add', 'Add New Data')">
+          <i class="fas fa-file"></i><span>Add New Data</span>
+        </div>
+
+        <div class="menu-item" onclick="navigate('/GSTR1&Form3B/arn', 'Update GSTR1 ARN')">
+          <i class="fas fa-pen"></i><span>Update GSTR1 ARN</span>
+        </div>
+
+        <div class="menu-item" onclick="navigate('/GSTR1&Form3B/form3b', 'Update Form 3B ARN')">
+          <i class="fas fa-pen"></i><span>Update Form 3B ARN</span>
+        </div>
+        <div class="menu-item" onclick="navigate('/GSTR1&Form3B/search', 'Search & Update')">
+        <i class="fas fa-search"></i><span>Search & Update</span>
+        </div>
+        <div class="menu-item" onclick="navigate('/GSTR1&Form3B/view', 'View Data')">
+        <i class="fas fa-database"></i><span>View Data</span>
+        </div>
+
+        <div class="menu-section">GSTR9 & 9C</div>
+
+          <div class="menu-item" onclick="navigate('/gstr9/arn','Update GSTR9 ARN')">
+          <i class="fas fa-pen"></i><span>Update ARN</span>
+          </div>
+
+<div class="menu-item" onclick="navigate('/gstr9/view','View Data')">
+  <i class="fas fa-database"></i><span>View Data</span>
+</div>
+
+<div class="menu-section">CMP-08</div>
+
+<div class="menu-item" onclick="navigate('/cmp/add','Add New Data')">
+  <i class="fas fa-file"></i><span>Add New Data</span>
+</div>
+
+<div class="menu-item" onclick="navigate('/cmp/arn','Update ARN')">
+  <i class="fas fa-pen"></i><span>Update ARN</span>
+</div>
+
+<div class="menu-item" onclick="navigate('/cmp/search','Search & Update')">
+  <i class="fas fa-search"></i><span>Search & Update</span>
+</div>
+
+<div class="menu-item" onclick="navigate('/cmp/view','View Data')">
+  <i class="fas fa-database"></i><span>View Data</span>
+</div>
+
+        <div class="menu-section">GSTR4</div>
+
+          <div class="menu-item" onclick="navigate('/gstr4/arn','Update GSTR ARN')">
+          <i class="fas fa-pen"></i><span>Update ARN</span>
+          </div>
+<div class="menu-item" onclick="navigate('/gstr4/view','View Data')">
+  <i class="fas fa-database"></i><span>View Data</span>
+</div>
+        </div>
       </div>
     </div>
 
-    <script>
-      /* ================= BASIC ================= */
-
-      function logout() {
-        localStorage.removeItem("username");
-        window.location.href = "/";
-      }
-
-      const months = [
-        "April 2026",
-        "May 2026",
-        "June 2026",
-        "July 2026",
-        "August 2026",
-        "September 2026",
-        "October 2026",
-        "November 2026",
-        "December 2026",
-        "January 2027",
-        "February 2027",
-        "March 2027",
-      ];
-
-      /* ================= LOAD FORM ================= */
-
-      function processOperation() {
-        const value = document.getElementById("operationSelect").value;
-        const area = document.getElementById("formArea");
-
-        if (!value) {
-          alert("Please select operation");
-          return;
-        }
-
-        if (value === "master") {
-          area.innerHTML = masterForm();
-          attachFormHandler("masterForm", "/api/master-file");
-        }
-
-        if (value === "update") {
-          area.innerHTML = updateForm();
-          attachFormHandler("updateForm", "/api/update-master-file");
-        }
-
-        if (value === "gstr1") {
-          area.innerHTML = gstr1Form();
-          attachFormHandler("gstr1Form", "/api/gstr1");
-        }
-
-        if (value === "form3b") {
-          area.innerHTML = form3bForm();
-          attachFormHandler("form3bForm", "/api/form3b");
-        }
-      }
-
-      /* ================= ATTACH SUBMIT ================= */
-
-      function attachFormHandler(formId, endpoint) {
-        const form = document.getElementById(formId);
-        if (!form) return;
-
-        form.addEventListener("submit", async function (e) {
-          e.preventDefault();
-
-          const data = Object.fromEntries(new FormData(form).entries());
-
-          console.log("Submitting to:", endpoint);
-          console.log("Payload:", data);
-
-          try {
-            const response = await fetch(endpoint, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(data),
-            });
-
-            const result = await response.json();
-
-            alert(result.message || result.error || "Success");
-          } catch (error) {
-            console.error("Fetch error:", error);
-            alert("Something went wrong. Check console.");
-          }
-        });
-      }
-
-      /* ================= MASTER FORM ================= */
-
-      function masterForm() {
-        return `
-<div class="form-card">
-<h2>Add Client Data</h2>
-
-<form id="masterForm">
-
-<input name="name" placeholder="Name" required>
-
-<input name="gst_no"
-pattern="[0-9]{15}" maxlength="15"
-placeholder="GST No (15 digits)" required>
-
-<input name="id" type="number"
-placeholder="ID" required>
-
-<input name="password"
-type="password"
-placeholder="Password" required>
-
-<input name="concern_person"
-placeholder="Concern Person" required>
-
-<input name="contact_no"
-pattern="[0-9]{10}" maxlength="10"
-placeholder="Contact No (10 digits)" required>
-
-<input name="email_id"
-type="email"
-placeholder="Email ID" required>
-
-<select name="periodicity" required>
-<option value="">Periodicity</option>
-<option>Monthly</option>
-<option>Quarterly</option>
-</select>
-
-<select id="startMonth"
-name="start_month" required>
-<option value="">Start Month</option>
-${months.map((m) => `<option value="${m}">${m}</option>`).join("")}
-</select>
-
-<select id="endMonth"
-name="end_month" required>
-<option value="">End Month</option>
-</select>
-
-<button type="submit">Submit</button>
-
-</form>
-</div>
-`;
-      }
-
-      /* Restrict End Month */
-      document.addEventListener("change", function (e) {
-        if (e.target.id === "startMonth") {
-          const startValue = e.target.value;
-          const startIndex = months.indexOf(startValue);
-          const endSelect = document.getElementById("endMonth");
-
-          endSelect.innerHTML = '<option value="">End Month</option>';
-
-          months.forEach((m, i) => {
-            if (i >= startIndex) {
-              endSelect.innerHTML += `<option value="${m}">${m}</option>`;
-            }
-          });
-        }
-      });
-
-      /* ================= UPDATE FORM ================= */
-
-      function updateForm() {
-        return `
-<div class="form-card">
-<h2>Update Client Data</h2>
-
-<form id="updateForm">
-
-<input name="gst_no"
-pattern="[0-9]{15}" maxlength="15"
-placeholder="GST No (15 digits)" required>
-
-<input name="id"
-type="number"
-placeholder="ID" required>
-
-<input name="password"
-type="password"
-placeholder="Password" required>
-
-<input name="concern_person"
-placeholder="Concern Person" required>
-
-<input name="contact_no"
-pattern="[0-9]{10}" maxlength="10"
-placeholder="Contact No (10 digits)" required>
-
-<input name="email_id"
-type="email"
-placeholder="Email ID" required>
-
-<select name="periodicity" required>
-<option value="">Periodicity</option>
-<option>Monthly</option>
-<option>Quarterly</option>
-</select>
-
-<button type="submit">Update</button>
-
-</form>
-</div>
-`;
-      }
-
-      /* ================= GSTR1 FORM ================= */
-
-      function gstr1Form() {
-        return `
-<div class="form-card">
-<h2>GSTR1 Filing</h2>
-
-<form id="gstr1Form">
-
-<input name="gst_no"
-pattern="[0-9]{15}" maxlength="15"
-placeholder="GST No" required>
-
-<select name="month" required>
-<option value="">Month</option>
-${months.map((m) => `<option value="${m}">${m}</option>`).join("")}
-</select>
-
-<select name="arn_status"
-id="arnStatus"
-onchange="toggleARN(this)" required>
-
-<option value="">Select ARN Status</option>
-<option>Filed by Client</option>
-<option>Client Exited</option>
-<option>GST Cancelled</option>
-<option>NA</option>
-<option value="manual">Enter ARN Manually</option>
-
-</select>
-
-<input name="arn_no"
-id="manualARN"
-pattern="[A-Za-z0-9]{15}" maxlength="15"
-placeholder="Enter ARN"
-style="display:none;">
-
-<input name="filing_date"
-type="date" required>
-
-<button type="submit">Submit</button>
-
-</form>
-</div>
-`;
-      }
-
-      function toggleARN(select) {
-        const input = document.getElementById("manualARN");
-
-        if (select.value === "manual") {
-          input.style.display = "block";
-          input.required = true;
-        } else {
-          input.style.display = "none";
-          input.required = false;
-        }
-      }
-
-      /* ================= FORM3B FORM ================= */
-
-      function form3bForm() {
-        return `
-<div class="form-card">
-<h2>Form 3B Filing</h2>
-
-<form id="form3bForm">
-
-<input name="gst_no"
-pattern="[0-9]{15}" maxlength="15"
-placeholder="GST No" required>
-
-<select name="month" required>
-<option value="">Month</option>
-${months.map((m) => `<option value="${m}">${m}</option>`).join("")}
-</select>
-
-<input name="arn_no"
-pattern="[A-Za-z0-9]{15}" maxlength="15"
-placeholder="Form 3B ARN No" required>
-
-<input name="filing_date"
-type="date" required>
-
-<button type="submit">Submit</button>
-
-</form>
-</div>
-`;
-      }
-    </script>
+    <!-- MAIN -->
+    <div class="main">
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <h1 id="pageTitle">Dashboard</h1>
+
+        <div class="top-actions">
+          <button class="logout">Logout</button>
+        </div>
+      </div>
+
+      <!-- CARDS -->
+      <div class="cards">
+        <div class="card blue">
+          <div>
+            <p>GSTR1 & Form 3B</p>
+            <h2>0</h2>
+          </div>
+          <i class="fas fa-file"></i>
+        </div>
+
+        <div class="card green">
+          <div>
+            <p>GSTR9 & 9C</p>
+            <h2>0</h2>
+          </div>
+          <i class="fas fa-users"></i>
+        </div>
+
+        <div class="card orange">
+          <div>
+            <p>CMP-08</p>
+            <h2>0</h2>
+          </div>
+          <i class="fas fa-calendar"></i>
+        </div>
+
+        <div class="card purple">
+          <div>
+            <p>GSTR4</p>
+            <h2>0</h2>
+          </div>
+          <i class="fas fa-check"></i>
+        </div>
+      </div>
+<script>
+function navigate(url, title) {
+  fetch(url)
+    .then(res => res.text())
+    .then(html => {
+
+      // remove dashboard cards
+      const cards = document.querySelector(".cards");
+      if (cards) cards.remove();
+
+      // update title dynamically
+      document.getElementById("pageTitle").innerText = title;
+
+      // load form
+      const formArea = document.getElementById("formArea");
+      formArea.style.display = "block";
+      formArea.innerHTML = html;
+
+// 🔥 FORCE SCRIPT EXECUTION
+const scripts = formArea.querySelectorAll("script");
+scripts.forEach(oldScript => {
+  const newScript = document.createElement("script");
+  newScript.textContent = oldScript.textContent;
+  document.body.appendChild(newScript);
+});
+    });
+}
+</script>
+      </script>
+      <!-- CONTENT -->
+      <div id="formArea">
+        <h2>Welcome 👋</h2>
+        <p>Select an option from sidebar</p>
+      </div>
+    </div>
   </body>
 </html>

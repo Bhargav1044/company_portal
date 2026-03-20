@@ -59,6 +59,61 @@ def user_dashboard():
 def add_master_file():
     data = request.json
     print("MASTER DATA RECEIVED:", data)  
+    
+@app.route("/GSTR1&Form3B/add")
+def gstr1_add():
+    return render_template("GSTR1&Form3B/add.html")
+
+@app.route("/GSTR1&Form3B/arn")
+def gstr1_arn():
+    return render_template("GSTR1&Form3B/arn.html")
+
+@app.route("/GSTR1&Form3B/form3b")
+def gstr1_form3b():
+    return render_template("GSTR1&Form3B/form3b.html")
+
+# ✅ NEW ROUTE (SEARCH)
+@app.route("/GSTR1&Form3B/search")
+def gstr1_search():
+    return render_template("GSTR1&Form3B/search.html")
+
+# ✅ NEW ROUTE (VIEW)
+@app.route("/GSTR1&Form3B/view")
+def gstr1_view():
+    return render_template("GSTR1&Form3B/view.html")
+
+@app.route("/gstr9/arn")
+def gstr9_arn():
+    return render_template("GSTR9/arn.html")
+
+@app.route("/gstr9/view")
+def gstr9_view():
+    return render_template("GSTR9/view.html")
+
+@app.route("/gstr4/arn")
+def gstr4_arn():
+    return render_template("GSTR4/arn.html")
+
+@app.route("/gstr4/view")
+def gstr4_view():
+    return render_template("GSTR4/view.html")
+
+# ===== CMP =====
+@app.route("/cmp/add")
+def cmp_add():
+    return render_template("CMP-08/add.html")
+
+@app.route("/cmp/arn")
+def cmp_arn():
+    return render_template("CMP-08/arn.html")
+
+@app.route("/cmp/search")
+def cmp_search():
+    return render_template("CMP-08/search.html")
+
+@app.route("/cmp/view")
+def cmp_view():
+    return render_template("CMP-08/view.html")
 
     response = supabase.table("master_file").insert({
         "name": data["name"],
